@@ -275,7 +275,7 @@ int main(int argc, char *argv[]) {
 		char *humanUnit = humanReadableSize(expectedSize, &humanSize);
 
 		printf("Expected PRD size: %ld (%.2f %s).\n", expectedSize, humanSize, humanUnit);
-		
+
 		double avgSize = expectedSize / entryCount;
 		humanUnit = humanReadableSize_d(avgSize, &humanSize);
 		printf("Average file size, including placeholders: %.3f %s.\n", humanSize, humanUnit);
@@ -304,8 +304,6 @@ int main(int argc, char *argv[]) {
 			printf("Size (%ld) is less than expected minimum size (%ld).\n", dataSize, expectedSize);
 		}
 	}
-	
-	// Compact: Verify dataSize matches expected
 
 	close(prd);
 

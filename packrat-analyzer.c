@@ -344,6 +344,7 @@ int main(int argc, char *argv[]) {
 			printf("Total size of files (%ld) does not match PRD size (%ld).\n", totalDataSize, dataSize);
 	} else if (type == 'C') {
 		uint64_t prevPos = 0;
+		int validCount = 0;
 
 		for (int i = 0; i < entryCount; i++) {
 			char info[infoBytes];
@@ -351,10 +352,15 @@ int main(int argc, char *argv[]) {
 			if (bytesRead != infoBytes) {close(pri); return -2;}
 
 			const uint64_t pos = simpleUint_toInt(info, 0, bitsPos);
-			if (pos > dataSize) printf("Entry %d is corrupt: position size (%ld) is higher than file size.\n", i, pos);
-			if (pos < prevPos) printf("Entry %d is corrupt: position size (%ld) is located before the position of the previous entry (%ld).\n", i, pos, prevPos);
-			prevPos = pos;
+			if (pos != 0) {
+				if (pos > dataSize) printf("Entry %d is corrupt: position size (%ld) is higher than file size.\n", i, pos);
+				if (pos < prevPos) printf("Entry %d is corrupt: position size (%ld) is located before the position of the previous entry (%ld).\n", i, pos, prevPos);
+				prevPos = pos;
+				validCount++;
+			}
 		}
+
+		printf("%d non-empty files\n", validCount);
 	}
 
 	fclose(prif);

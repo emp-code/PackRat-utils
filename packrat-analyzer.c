@@ -253,7 +253,7 @@ int main(int argc, char *argv[]) {
 	printf("Number of entries: %d.\n", entryCount);
 
 	uint64_t expectedSize = 0;
-	if (type == 'C') {
+	if (type == 'C' && entryCount > 1) {
 		uint64_t lastPos;
 		for (int i = 1; (entryCount - i) > 0; i++) {
 			lastPos = getPos(pri, infoBytes, entryCount - i, bitsPos);
@@ -365,7 +365,7 @@ int main(int argc, char *argv[]) {
 			}
 		}
 
-		printf("%d non-empty files\n", validCount);
+		printf("%d non-empty files after the first file\n", validCount);
 	}
 
 	fclose(prif);

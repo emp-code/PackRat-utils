@@ -254,7 +254,12 @@ int main(int argc, char *argv[]) {
 
 	uint64_t expectedSize = 0;
 	if (type == 'C') {
-		uint64_t lastPos = getPos(pri, infoBytes, entryCount - 1, bitsPos);
+		uint64_t lastPos;
+		for (int i = 1; (entryCount - i) > 0; i++) {
+			lastPos = getPos(pri, infoBytes, entryCount - i, bitsPos);
+			if (lastPos != 0) break;
+		}
+
 		double humanSize;
 		char *humanUnit = humanReadableSize(lastPos, &humanSize);
 

@@ -65,9 +65,10 @@ int main(int argc, char *argv[]) {
 
 	if (argc < 2) {
 		printf(
-			"Usage:\nShort analysis (index only, fast): %s index.pri\n"
-			"Full analysis (index and data, may be slow): %s index.pri data.prd\n",
-		argv[0], argv[0]);
+			"Usage:\n"
+			"Short analysis (index only): %s index.pri\n"
+			"Full analysis (index and data): %s index.pri data.prd\n"
+		, argv[0], argv[0]);
 
 		return 0;
 	}
@@ -100,18 +101,18 @@ int main(int argc, char *argv[]) {
 	const int bitsPos = header[3];
 	const int bitsLen = header[4];
 
-	printf("Bits used for position: %d.\n", bitsPos);
-	printf("Bits used for length: %d%s.\n", bitsLen, (type == 'C') ? " (N/A)" : "");
+	printf("Bits used for position: %d\n", bitsPos);
+	printf("Bits used for length: %d%s\n", bitsLen, (type == 'C') ? " (N/A)" : "");
 
 	const int infoBytes = (type == 'C') ? ceil(bitsPos / (double)8) : ceil((bitsPos + bitsLen) / (double)8);
-	printf("Bytes used per entry: %d.\n", infoBytes);
+	printf("Bytes used per entry: %d\n", infoBytes);
 
 	puts("\n== PRI (Index): Entries ==");
 
 	const uint64_t indexSize = lseek(pri, 0, SEEK_END) - 5;
 
 	const int entryCount = indexSize / infoBytes;
-	printf("Number of entries: %d.\n", entryCount);
+	printf("Number of entries: %d\n", entryCount);
 
 	int phCount = 0;
 	uint64_t expectedSize = 0;
@@ -142,17 +143,17 @@ int main(int argc, char *argv[]) {
 		double humanSize;
 		char *humanUnit = humanReadableSize(expectedSize, &humanSize);
 
-		printf("Expected PRD size: %ld (%.2f %s).\n", expectedSize, humanSize, humanUnit);
+		printf("Expected PRD size: %ld bytes (%.2f %s)\n", expectedSize, humanSize, humanUnit);
 
 		printf("Number of placeholders: %d\n", phCount);
 
 		double avgSize = expectedSize / (entryCount);
 		humanUnit = humanReadableSize_d(avgSize, &humanSize);
-		printf("Average file size, including placeholders: %.3f %s.\n", humanSize, humanUnit);
+		printf("Average file size, including placeholders: %f bytes (%.3f %s)\n", avgSize, humanSize, humanUnit);
 
 		avgSize = expectedSize / (entryCount - phCount);
 		humanUnit = humanReadableSize_d(avgSize, &humanSize);
-		printf("Average file size, excluding placeholders: %.3f %s.\n", humanSize, humanUnit);
+		printf("Average file size, excluding placeholders: %f bytes (%.3f %s)\n", avgSize, humanSize, humanUnit);
 	}
 
 	close(pri);
@@ -214,7 +215,7 @@ int main(int argc, char *argv[]) {
 			}
 		}
 
-		printf("%d non-empty files after the first file\n", validCount);
+		printf("%d non-empty files after the first file.\n", validCount);
 	}
 
 	fclose(prif);

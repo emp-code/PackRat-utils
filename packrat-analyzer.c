@@ -113,6 +113,7 @@ int main(int argc, char *argv[]) {
 	const int entryCount = indexSize / infoBytes;
 	printf("Number of entries: %d.\n", entryCount);
 
+	int phCount = 0;
 	uint64_t expectedSize = 0;
 	if (type == 'C' && entryCount > 1) {
 		uint64_t lastPos;
@@ -127,14 +128,15 @@ int main(int argc, char *argv[]) {
 		printf("Last file stored in the PRD begins at byte %ld (%.2f %s).\n", lastPos, humanSize, humanUnit);
 		expectedSize = lastPos;
 	} else if (type == '0') {
-		for (int i = 1; expectedSize == 0; i++) {
+		for (int i = 0; i < entryCount; i++) {
 			char info[infoBytes];
-			int bytesRead = pread(pri, info, infoBytes, 5 + (entryCount - i) * infoBytes);
+			int bytesRead = pread(pri, info, infoBytes, 5 + (i * infoBytes));
 			if (bytesRead != infoBytes) {close(pri); return -2;}
 
 			const uint64_t pos = pruint_fetch(info, 0,       bitsPos);
 			const uint64_t len = pruint_fetch(info, bitsPos, bitsLen);
-			expectedSize = pos + len;
+			expectedSize += len;
+			if (len == 0) phCount++;
 		}
 
 		double humanSize;
@@ -142,9 +144,15 @@ int main(int argc, char *argv[]) {
 
 		printf("Expected PRD size: %ld (%.2f %s).\n", expectedSize, humanSize, humanUnit);
 
-		double avgSize = expectedSize / entryCount;
+		printf("Number of placeholders: %d\n", phCount);
+
+		double avgSize = expectedSize / (entryCount);
 		humanUnit = humanReadableSize_d(avgSize, &humanSize);
 		printf("Average file size, including placeholders: %.3f %s.\n", humanSize, humanUnit);
+
+		avgSize = expectedSize / (entryCount - phCount);
+		humanUnit = humanReadableSize_d(avgSize, &humanSize);
+		printf("Average file size, excluding placeholders: %.3f %s.\n", humanSize, humanUnit);
 	}
 
 	close(pri);
@@ -173,9 +181,7 @@ int main(int argc, char *argv[]) {
 
 	close(prd);
 
-	puts("\n== PRI (Index): Full scan - may be slow ==");
-	uint64_t totalDataSize = 0;
-	int phCount = 0;
+	puts("\n== PRI (Index): Full scan ==");
 
 	FILE* prif = fopen(argv[1], "rb"); // faster than open() method for large reads
 	if (prif == NULL) {puts("Failed to open PRI file. Exiting."); return 1;}
@@ -187,27 +193,9 @@ int main(int argc, char *argv[]) {
 			int bytesRead = fread(info, 1, infoBytes, prif);
 			if (bytesRead != infoBytes) {close(pri); return -2;}
 
-			const uint64_t pos = pruint_fetch(info, 0,       bitsPos);
-			const uint64_t len = pruint_fetch(info, bitsPos, bitsLen);
-
+			const uint64_t pos = pruint_fetch(info, 0, bitsPos);
 			if (pos > dataSize) printf("Entry %d is corrupt: position size (%ld) is higher than file size.\n", i, pos);
-
-			if (len == 0) phCount++;
-
-			totalDataSize += len;
 		}
-
-		printf("Number of placeholders: %d\n", phCount);
-
-		double avgSize = expectedSize / (entryCount - phCount);
-		double humanSize;
-		char *humanUnit = humanReadableSize_d(avgSize, &humanSize);
-		printf("Average file size, excluding placeholders: %.3f %s.\n", humanSize, humanUnit);
-
-		if (totalDataSize == dataSize)
-			puts("Total size of files matches PRD size.");
-		else
-			printf("Total size of files (%ld) does not match PRD size (%ld).\n", totalDataSize, dataSize);
 	} else if (type == 'C') {
 		uint64_t prevPos = 0;
 		int validCount = 0;

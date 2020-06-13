@@ -147,13 +147,15 @@ int main(int argc, char *argv[]) {
 
 		printf("Number of placeholders: %d\n", phCount);
 
-		double avgSize = expectedSize / (entryCount);
-		humanUnit = humanReadableSize_d(avgSize, &humanSize);
-		printf("Average file size, including placeholders: %f bytes (%.3f %s)\n", avgSize, humanSize, humanUnit);
+		if (entryCount > 0) {
+			double avgSize = expectedSize / (entryCount);
+			humanUnit = humanReadableSize_d(avgSize, &humanSize);
+			printf("Average file size, including placeholders: %f bytes (%.3f %s)\n", avgSize, humanSize, humanUnit);
 
-		avgSize = expectedSize / (entryCount - phCount);
-		humanUnit = humanReadableSize_d(avgSize, &humanSize);
-		printf("Average file size, excluding placeholders: %f bytes (%.3f %s)\n", avgSize, humanSize, humanUnit);
+			avgSize = expectedSize / (entryCount - phCount);
+			humanUnit = humanReadableSize_d(avgSize, &humanSize);
+			printf("Average file size, excluding placeholders: %f bytes (%.3f %s)\n", avgSize, humanSize, humanUnit);
+		}
 	}
 
 	close(pri);
@@ -184,7 +186,7 @@ int main(int argc, char *argv[]) {
 
 	puts("\n== PRI (Index): Full scan ==");
 
-	FILE* prif = fopen(argv[1], "rb"); // faster than open() method for large reads
+	FILE *prif = fopen(argv[1], "rb"); // faster than open() method for large reads
 	if (prif == NULL) {puts("Failed to open PRI file. Exiting."); return 1;}
 	fseek(prif, 5, SEEK_SET); // skip header
 
